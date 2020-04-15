@@ -1,4 +1,4 @@
-# LyricsToFTP
+# CaptionsToFCP
 Automator script in JXA to generate a captions file.
 
 ##**Note**
