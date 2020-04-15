@@ -1,0 +1,108 @@
+//Written to be run as an Automator workflow in MacOS.
+
+function run(input, parameters) {
+
+//Include OSA library
+var app = Application.currentApplication()
+app.includeStandardAdditions = true
+var userPath = app.pathTo ('home folder')
+
+var captionsInput = input.toString()
+
+//Applescript/JXA boilerplate function
+function writeTextToFile(text, file, overwriteExistingContent) {
+    try {
+
+        // Convert the file to a string
+        var fileString = file.toString()
+
+        // Open the file for writing
+        var openedFile = app.openForAccess(Path(fileString), { writePermission: true })
+
+        // Clear the file if content should be overwritten
+        if (overwriteExistingContent) {
+            app.setEof(openedFile, { to: 0 })
+        }
+
+        // Write the new content to the file
+        app.write(text, { to: openedFile, startingAt: app.getEof(openedFile) })
+
+        // Close the file
+        app.closeAccess(openedFile)
+
+        // Return a boolean indicating that writing was successful
+        return true
+    }
+    catch(error) {
+
+        try {
+            // Close the file
+            app.closeAccess(file)
+        }
+        catch(error) {
+            // Report the error is closing failed
+            console.log(`Couldn't close file: ${error}`)
+        }
+
+        // Return a boolean indicating that writing was successful
+        return false
+    }
+}
+
+//Generate an XML text block
+
+var textImport = captionsInput.split("\n\n")
+var projectTitle = textImport[0]
+
+var textArray = []
+
+//Import iTT template
+var iTTString = userPath.toString() + '/Library/Application Support/CaptionsToFCP/FCPCaptionsBlank.itt'
+var iTTBlank = app.read(Path(iTTString))
+
+for (var i=1; i< textImport.length; i++){
+var sectionText = textImport[i].split("\n")
+  for (var j=0; j<sectionText.length; j=j+2){
+    var textPair = sectionText[j]+ (sectionText[j+1] ? ("<br/>" + sectionText[j+1]):"")
+    textArray.push(textPair)
+  }
+}
+
+var captionDuration = 10
+var replacementString = ""
+var indexCount = 0
+
+for (let element of textArray) {
+
+  var beginTimeInSeconds = indexCount * captionDuration
+  var endTimeInSeconds = beginTimeInSeconds + captionDuration
+
+  var date = new Date(null);
+  date.setSeconds(beginTimeInSeconds);
+  var beginTimeISO = date.toISOString().substr(11, 8);
+
+  date = new Date(null);
+  date.setSeconds(endTimeInSeconds);
+  var endTimeISO = date.toISOString().substr(11, 8);
+
+  var stringConstruction = "<p begin=\"" + beginTimeISO + ":00\" end=\"" + endTimeISO +":00\" region=\"bottom\">" + element + "</p>"
+
+  replacementString = replacementString + "\n"+ stringConstruction
+  indexCount += 1
+}
+var generateITT = iTTBlank.replace(/<p.*<\/p>/gm, replacementString)
+
+//remove curly quotes (app.write doesn't like them)
+generateITT = generateITT.replace(/[\u2018\u2019]/g,"'")
+generateITT = generateITT.replace(/[\u201C\u201D]/g,"\"")
+generateITT = generateITT.replace(/[\u2014]/g,"\-")
+//Create filepath
+
+var fileDir = userPath.toString() + '/Movies/CaptionsToFCP/'
+var now = new Date()
+var fileName = fileDir + projectTitle + now + ".itt";
+
+//save textblock to file
+writeTextToFile (generateITT, fileName, true)
+
+}

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AMApplicationBuild</key>
+	<string>492</string>
+	<key>AMApplicationVersion</key>
+	<string>2.10</string>
+	<key>AMDocumentVersion</key>
+	<string>2</string>
+	<key>actions</key>
+	<array>
+		<dict>
+			<key>action</key>
+			<dict>
+				<key>AMAccepts</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Optional</key>
+					<true/>
+					<key>Types</key>
+					<array>
+						<string>com.apple.applescript.object</string>
+					</array>
+				</dict>
+				<key>AMActionVersion</key>
+				<string>1.0</string>
+				<key>AMApplication</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>AMParameterProperties</key>
+				<dict>
+					<key>source</key>
+					<dict/>
+				</dict>
+				<key>AMProvides</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Types</key>
+					<array>
+						<string>com.apple.applescript.object</string>
+					</array>
+				</dict>
+				<key>ActionBundlePath</key>
+				<string>/System/Library/Automator/Run JavaScript.action</string>
+				<key>ActionName</key>
+				<string>Run JavaScript</string>
+				<key>ActionParameters</key>
+				<dict>
+					<key>source</key>
+					<string>function run(input, parameters) {//Include OSA libraryvar app = Application.currentApplication()app.includeStandardAdditions = truevar userPath = app.pathTo ('home folder')var captionsInput = input.toString()//Applescript/JXA boilerplate functionfunction writeTextToFile(text, file, overwriteExistingContent) {    try {        // Convert the file to a string        var fileString = file.toString()        // Open the file for writing        var openedFile = app.openForAccess(Path(fileString), { writePermission: true })        // Clear the file if content should be overwritten        if (overwriteExistingContent) {            app.setEof(openedFile, { to: 0 })        }        // Write the new content to the file        app.write(text, { to: openedFile, startingAt: app.getEof(openedFile) })        // Close the file        app.closeAccess(openedFile)        // Return a boolean indicating that writing was successful        return true    }    catch(error) {        try {            // Close the file            app.closeAccess(file)        }        catch(error) {            // Report the error is closing failed            console.log(`Couldn't close file: ${error}`)        }        // Return a boolean indicating that writing was successful        return false    }}//Generate an XML text blockvar textImport = captionsInput.split("\n\n")var projectTitle = textImport[0]var textArray = []//Import iTT templatevar iTTString = userPath.toString() + '/Library/Application Support/CaptionsToFCP/FCPCaptionsBlank.itt'var iTTBlank = app.read(Path(iTTString))for (var i=1; i&lt; textImport.length; i++){var sectionText = textImport[i].split("\n")  for (var j=0; j&lt;sectionText.length; j=j+2){    var textPair = sectionText[j]+ (sectionText[j+1] ? ("&lt;br/&gt;" + sectionText[j+1]):"")    textArray.push(textPair)  }}var captionDuration = 10var replacementString = ""var indexCount = 0for (let element of textArray) {  var beginTimeInSeconds = indexCount * captionDuration  var endTimeInSeconds = beginTimeInSeconds + captionDuration  var date = new Date(null);  date.setSeconds(beginTimeInSeconds);  var beginTimeISO = date.toISOString().substr(11, 8);
+
+date = new Date(null);  date.setSeconds(endTimeInSeconds);  var endTimeISO = date.toISOString().substr(11, 8);  var stringConstruction = "&lt;p begin=\"" + beginTimeISO + ":00\" end=\"" + endTimeISO +":00\" region=\"bottom\"&gt;" + element + "&lt;/p&gt;"  replacementString = replacementString + "\n"+ stringConstruction  indexCount += 1}var generateITT = iTTBlank.replace(/&lt;p.*&lt;\/p&gt;/gm, replacementString)//remove curly quotes (app.write doesn't like them)generateITT = generateITT.replace(/[\u2018\u2019]/g,"'")generateITT = generateITT.replace(/[\u201C\u201D]/g,"\"")
+generateITT = generateITT.replace(/[\u2014]/g,"\-")
+//Create filepathvar fileDir = userPath.toString() + '/Movies/CaptionsToFCP/'var now = new Date()var fileName = fileDir + projectTitle + now + ".itt";//save textblock to filewriteTextToFile (generateITT, fileName, true)}</string>
+				</dict>
+				<key>BundleIdentifier</key>
+				<string>com.apple.Automator.RunJavaScript</string>
+				<key>CFBundleVersion</key>
+				<string>1.0</string>
+				<key>CanShowSelectedItemsWhenRun</key>
+				<false/>
+				<key>CanShowWhenRun</key>
+				<true/>
+				<key>Category</key>
+				<array>
+					<string>AMCategoryUtilities</string>
+				</array>
+				<key>Class Name</key>
+				<string>RunJavaScriptAction</string>
+				<key>InputUUID</key>
+				<string>FCBB6521-26D5-4FA9-B148-32087A54AEEB</string>
+				<key>Keywords</key>
+				<array>
+					<string>Run</string>
+					<string>JavaScript</string>
+				</array>
+				<key>OutputUUID</key>
+				<string>8F9B6150-0AB2-43CC-B150-30897F685D54</string>
+				<key>UUID</key>
+				<string>CB6A29FB-1155-40BD-B9CF-416BE4072E23</string>
+				<key>UnlocalizedApplications</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>arguments</key>
+				<dict>
+					<key>0</key>
+					<dict>
+						<key>default value</key>
+						<string>function run(input, parameters) {
+	
+	// Your script goes here
+
+	return input;
+}</string>
+						<key>name</key>
+						<string>source</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>0</string>
+					</dict>
+				</dict>
+				<key>isViewVisible</key>
+				<true/>
+				<key>location</key>
+				<string>312.750000:586.000000</string>
+				<key>nibPath</key>
+				<string>/System/Library/Automator/Run JavaScript.action/Contents/Resources/Base.lproj/main.nib</string>
+			</dict>
+			<key>isViewVisible</key>
+			<true/>
+		</dict>
+	</array>
+	<key>connectors</key>
+	<dict/>
+	<key>workflowMetaData</key>
+	<dict>
+		<key>applicationBundleIDsByPath</key>
+		<dict/>
+		<key>applicationPaths</key>
+		<array/>
+		<key>inputTypeIdentifier</key>
+		<string>com.apple.Automator.text</string>
+		<key>outputTypeIdentifier</key>
+		<string>com.apple.Automator.nothing</string>
+		<key>presentationMode</key>
+		<integer>11</integer>
+		<key>processesInput</key>
+		<integer>0</integer>
+		<key>serviceInputTypeIdentifier</key>
+		<string>com.apple.Automator.text</string>
+		<key>serviceOutputTypeIdentifier</key>
+		<string>com.apple.Automator.nothing</string>
+		<key>serviceProcessesInput</key>
+		<integer>0</integer>
+		<key>systemImageName</key>
+		<string>NSActionTemplate</string>
+		<key>useAutomaticInputType</key>
+		<integer>0</integer>
+		<key>workflowTypeIdentifier</key>
+		<string>com.apple.Automator.servicesMenu</string>
+	</dict>
+</dict>
+</plist>
