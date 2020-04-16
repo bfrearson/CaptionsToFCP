@@ -51,11 +51,7 @@
 				<key>ActionParameters</key>
 				<dict>
 					<key>source</key>
-					<string>function run(input, parameters) {//Include OSA libraryvar app = Application.currentApplication()app.includeStandardAdditions = truevar userPath = app.pathTo ('home folder')var captionsInput = input.toString()//Applescript/JXA boilerplate functionfunction writeTextToFile(text, file, overwriteExistingContent) {    try {        // Convert the file to a string        var fileString = file.toString()        // Open the file for writing        var openedFile = app.openForAccess(Path(fileString), { writePermission: true })        // Clear the file if content should be overwritten        if (overwriteExistingContent) {            app.setEof(openedFile, { to: 0 })        }        // Write the new content to the file        app.write(text, { to: openedFile, startingAt: app.getEof(openedFile) })        // Close the file        app.closeAccess(openedFile)        // Return a boolean indicating that writing was successful        return true    }    catch(error) {        try {            // Close the file            app.closeAccess(file)        }        catch(error) {            // Report the error is closing failed            console.log(`Couldn't close file: ${error}`)        }        // Return a boolean indicating that writing was successful        return false    }}//Generate an XML text blockvar textImport = captionsInput.split("\n\n")var projectTitle = textImport[0]var textArray = []//Import iTT templatevar iTTString = userPath.toString() + '/Library/Application Support/CaptionsToFCP/FCPCaptionsBlank.itt'var iTTBlank = app.read(Path(iTTString))for (var i=1; i&lt; textImport.length; i++){var sectionText = textImport[i].split("\n")  for (var j=0; j&lt;sectionText.length; j=j+2){    var textPair = sectionText[j]+ (sectionText[j+1] ? ("&lt;br/&gt;" + sectionText[j+1]):"")    textArray.push(textPair)  }}var captionDuration = 10var replacementString = ""var indexCount = 0for (let element of textArray) {  var beginTimeInSeconds = indexCount * captionDuration  var endTimeInSeconds = beginTimeInSeconds + captionDuration  var date = new Date(null);  date.setSeconds(beginTimeInSeconds);  var beginTimeISO = date.toISOString().substr(11, 8);
-
-date = new Date(null);  date.setSeconds(endTimeInSeconds);  var endTimeISO = date.toISOString().substr(11, 8);  var stringConstruction = "&lt;p begin=\"" + beginTimeISO + ":00\" end=\"" + endTimeISO +":00\" region=\"bottom\"&gt;" + element + "&lt;/p&gt;"  replacementString = replacementString + "\n"+ stringConstruction  indexCount += 1}var generateITT = iTTBlank.replace(/&lt;p.*&lt;\/p&gt;/gm, replacementString)//remove curly quotes (app.write doesn't like them)generateITT = generateITT.replace(/[\u2018\u2019]/g,"'")generateITT = generateITT.replace(/[\u201C\u201D]/g,"\"")
-generateITT = generateITT.replace(/[\u2014]/g,"\-")
-//Create filepathvar fileDir = userPath.toString() + '/Movies/CaptionsToFCP/'var now = new Date()var fileName = fileDir + projectTitle + now + ".itt";//save textblock to filewriteTextToFile (generateITT, fileName, true)}</string>
+					<string>function run(input, parameters) {//Include OSA libraryvar app = Application.currentApplication()app.includeStandardAdditions = truevar userPath = app.pathTo ('home folder')var captionsInput = input.toString()//Applescript/JXA boilerplate functionfunction writeTextToFile(text, file, overwriteExistingContent) {    try {        // Convert the file to a string        var fileString = file.toString()        // Open the file for writing        var openedFile = app.openForAccess(Path(fileString), { writePermission: true })        // Clear the file if content should be overwritten        if (overwriteExistingContent) {            app.setEof(openedFile, { to: 0 })        }        // Write the new content to the file        app.write(text, { to: openedFile, startingAt: app.getEof(openedFile) })        // Close the file        app.closeAccess(openedFile)        // Return a boolean indicating that writing was successful        return true    }    catch(error) {        try {            // Close the file            app.closeAccess(file)        }        catch(error) {            // Report the error is closing failed            console.log(`Couldn't close file: ${error}`)        }        // Return a boolean indicating that writing was successful        return false    }}//Generate an XML text blockvar textImport = captionsInput.split("\n\n")var projectTitle = textImport[0]var textArray = []//Import iTT templatevar iTTString = userPath.toString() + '/Library/Application Support/CaptionsToFCP/FCPCaptionsBlank.itt'var iTTBlank = app.read(Path(iTTString))for (var i=1; i&lt; textImport.length; i++){var sectionText = textImport[i].split("\n")  for (var j=0; j&lt;sectionText.length; j=j+2){    var textPair = sectionText[j]+ (sectionText[j+1] ? ("&lt;br/&gt;" + sectionText[j+1]):"")    textArray.push(textPair)  }}var captionDuration = 10var replacementString = ""var indexCount = 0for (let element of textArray) {  var beginTimeInSeconds = indexCount * captionDuration  var endTimeInSeconds = beginTimeInSeconds + captionDuration  var date = new Date(null);  date.setSeconds(beginTimeInSeconds);  var beginTimeISO = date.toISOString().substr(11, 8);date = new Date(null);  date.setSeconds(endTimeInSeconds);  var endTimeISO = date.toISOString().substr(11, 8);  var stringConstruction = "&lt;p begin=\"" + beginTimeISO + ":00\" end=\"" + endTimeISO +":00\" region=\"bottom\"&gt;" + element + "&lt;/p&gt;"  replacementString = replacementString + "\n"+ stringConstruction  indexCount += 1}var generateITT = iTTBlank.replace(/&lt;p.*&lt;\/p&gt;/gm, replacementString)//remove curly quotes (app.write doesn't like them)generateITT = generateITT.replace(/[\u2018\u2019]/g,"'")generateITT = generateITT.replace(/[\u201C\u201D]/g,"\"")generateITT = generateITT.replace(/[\u2014]/g,"\-")//Create filepathvar fileDir = userPath.toString() + '/Movies/CaptionsToFCP/'var now = new Date()var fileName = fileDir + projectTitle + now + ".itt";//save textblock to filewriteTextToFile (generateITT, fileName, true)}</string>
 				</dict>
 				<key>BundleIdentifier</key>
 				<string>com.apple.Automator.RunJavaScript</string>
@@ -110,16 +106,161 @@ generateITT = generateITT.replace(/[\u2014]/g,"\-")
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>
-				<string>312.750000:586.000000</string>
+				<string>299.500000:420.000000</string>
 				<key>nibPath</key>
 				<string>/System/Library/Automator/Run JavaScript.action/Contents/Resources/Base.lproj/main.nib</string>
 			</dict>
 			<key>isViewVisible</key>
 			<true/>
 		</dict>
+		<dict>
+			<key>action</key>
+			<dict>
+				<key>AMAccepts</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Optional</key>
+					<true/>
+					<key>Types</key>
+					<array/>
+				</dict>
+				<key>AMActionVersion</key>
+				<string>1.0</string>
+				<key>AMApplication</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>AMParameterProperties</key>
+				<dict>
+					<key>message</key>
+					<dict>
+						<key>tokenizedValue</key>
+						<array>
+							<string>View your captions in Movies/CaptionsToFCP</string>
+						</array>
+					</dict>
+					<key>subtitle</key>
+					<dict/>
+					<key>title</key>
+					<dict>
+						<key>tokenizedValue</key>
+						<array>
+							<string>Script complete</string>
+						</array>
+					</dict>
+				</dict>
+				<key>AMProvides</key>
+				<dict>
+					<key>Container</key>
+					<string>List</string>
+					<key>Types</key>
+					<array/>
+				</dict>
+				<key>ActionBundlePath</key>
+				<string>/System/Library/Automator/Display Notification.action</string>
+				<key>ActionName</key>
+				<string>Display Notification</string>
+				<key>ActionParameters</key>
+				<dict>
+					<key>message</key>
+					<string></string>
+					<key>subtitle</key>
+					<string></string>
+					<key>title</key>
+					<string>Script complete</string>
+				</dict>
+				<key>BundleIdentifier</key>
+				<string>com.apple.Automator.Display-Notification</string>
+				<key>CFBundleVersion</key>
+				<string>1.0</string>
+				<key>CanShowSelectedItemsWhenRun</key>
+				<true/>
+				<key>CanShowWhenRun</key>
+				<false/>
+				<key>Category</key>
+				<array>
+					<string>AMCategoryUtilities</string>
+				</array>
+				<key>Class Name</key>
+				<string>AMDisplayNotificationAction</string>
+				<key>InputUUID</key>
+				<string>CF877E3A-9952-4C5C-8BDD-FDA54AC677D9</string>
+				<key>Keywords</key>
+				<array/>
+				<key>OutputUUID</key>
+				<string>E1722104-5DBE-4A9C-A7BD-8E485C2C29D6</string>
+				<key>UUID</key>
+				<string>C8992ECD-AEEA-4873-8C5E-AC8C253E83A4</string>
+				<key>UnlocalizedApplications</key>
+				<array>
+					<string>Automator</string>
+				</array>
+				<key>arguments</key>
+				<dict>
+					<key>0</key>
+					<dict>
+						<key>default value</key>
+						<string></string>
+						<key>name</key>
+						<string>message</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>0</string>
+					</dict>
+					<key>1</key>
+					<dict>
+						<key>default value</key>
+						<string></string>
+						<key>name</key>
+						<string>subtitle</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>1</string>
+					</dict>
+					<key>2</key>
+					<dict>
+						<key>default value</key>
+						<string></string>
+						<key>name</key>
+						<string>title</string>
+						<key>required</key>
+						<string>0</string>
+						<key>type</key>
+						<string>0</string>
+						<key>uuid</key>
+						<string>2</string>
+					</dict>
+				</dict>
+				<key>conversionLabel</key>
+				<integer>0</integer>
+				<key>isViewVisible</key>
+				<true/>
+				<key>location</key>
+				<string>299.500000:609.000000</string>
+				<key>nibPath</key>
+				<string>/System/Library/Automator/Display Notification.action/Contents/Resources/Base.lproj/main.nib</string>
+			</dict>
+			<key>isViewVisible</key>
+			<true/>
+		</dict>
 	</array>
 	<key>connectors</key>
-	<dict/>
+	<dict>
+		<key>ECEE8D09-4D81-4522-82AD-6FA144B1A9C2</key>
+		<dict>
+			<key>from</key>
+			<string>CB6A29FB-1155-40BD-B9CF-416BE4072E23 - CB6A29FB-1155-40BD-B9CF-416BE4072E23</string>
+			<key>to</key>
+			<string>C8992ECD-AEEA-4873-8C5E-AC8C253E83A4 - C8992ECD-AEEA-4873-8C5E-AC8C253E83A4</string>
+		</dict>
+	</dict>
 	<key>workflowMetaData</key>
 	<dict>
 		<key>applicationBundleIDsByPath</key>
