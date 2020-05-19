@@ -51,7 +51,87 @@
 				<key>ActionParameters</key>
 				<dict>
 					<key>source</key>
-					<string>function run(input, parameters) {//Include OSA libraryvar app = Application.currentApplication()app.includeStandardAdditions = truevar userPath = app.pathTo ('home folder')var captionsInput = input.toString()//Applescript/JXA boilerplate functionfunction writeTextToFile(text, file, overwriteExistingContent) {    try {        // Convert the file to a string        var fileString = file.toString()        // Open the file for writing        var openedFile = app.openForAccess(Path(fileString), { writePermission: true })        // Clear the file if content should be overwritten        if (overwriteExistingContent) {            app.setEof(openedFile, { to: 0 })        }        // Write the new content to the file        app.write(text, { to: openedFile, startingAt: app.getEof(openedFile) })        // Close the file        app.closeAccess(openedFile)        // Return a boolean indicating that writing was successful        return true    }    catch(error) {        try {            // Close the file            app.closeAccess(file)        }        catch(error) {            // Report the error is closing failed            console.log(`Couldn't close file: ${error}`)        }        // Return a boolean indicating that writing was successful        return false    }}//Generate an XML text blockvar textImport = captionsInput.split("\n\n")var projectTitle = textImport[0]var textArray = []//Import iTT templatevar iTTString = userPath.toString() + '/Library/Application Support/CaptionsToFCP/FCPCaptionsBlank.itt'var iTTBlank = app.read(Path(iTTString))for (var i=1; i&lt; textImport.length; i++){var sectionText = textImport[i].split("\n")  for (var j=0; j&lt;sectionText.length; j=j+2){    var textPair = sectionText[j]+ (sectionText[j+1] ? ("&lt;br/&gt;" + sectionText[j+1]):"")    textArray.push(textPair)  }}var captionDuration = 10var replacementString = ""var indexCount = 0for (let element of textArray) {  var beginTimeInSeconds = indexCount * captionDuration  var endTimeInSeconds = beginTimeInSeconds + captionDuration  var date = new Date(null);  date.setSeconds(beginTimeInSeconds);  var beginTimeISO = date.toISOString().substr(11, 8);date = new Date(null);  date.setSeconds(endTimeInSeconds);  var endTimeISO = date.toISOString().substr(11, 8);  var stringConstruction = "&lt;p begin=\"" + beginTimeISO + ":00\" end=\"" + endTimeISO +":00\" region=\"bottom\"&gt;" + element + "&lt;/p&gt;"  replacementString = replacementString + "\n"+ stringConstruction  indexCount += 1}var generateITT = iTTBlank.replace(/&lt;p.*&lt;\/p&gt;/gm, replacementString)//remove curly quotes (app.write doesn't like them)generateITT = generateITT.replace(/[\u2018\u2019]/g,"'")generateITT = generateITT.replace(/[\u201C\u201D]/g,"\"")generateITT = generateITT.replace(/[\u2014]/g,"\-")//Create filepathvar fileDir = userPath.toString() + '/Movies/CaptionsToFCP/'var now = new Date()var fileName = fileDir + projectTitle + now + ".itt";//save textblock to filewriteTextToFile (generateITT, fileName, true)}</string>
+					<string>//Written to be run as an Automator workflow in MacOS.
+
+function run(input, parameters) {
+
+//Include OSA library
+var app = Application.currentApplication()
+app.includeStandardAdditions = true
+var userPath = app.pathTo ('home folder')
+
+var captionsInput = input.toString()
+
+//Use ObjC bridge to write unicode to file
+function writeTextToFile(text, file) {
+var nsStr       = $.NSString.alloc.initWithUTF8String(text)
+console.log (nsStr)
+var nsPath      = $(file).stringByStandardizingPath
+console.log(nsPath)
+var successBool  = nsStr.writeToFileAtomicallyEncodingError(nsPath, true, $.NSUTF8StringEncoding, $());
+  if (!successBool) {
+    throw new Error("function writeFile ERROR:\nWrite to File FAILED for:\n" + file)
+  }
+  return successBool
+}
+
+//Generate an XML text block
+
+var textImport = captionsInput.split("\n\n")
+var projectTitle = textImport[0]
+
+var textArray = []
+
+//Import iTT template
+var iTTString = userPath.toString() + '/Library/Application Support/CaptionsToFCP/FCPCaptionsBlank.itt'
+var iTTBlank = app.read(Path(iTTString))
+
+for (var i=1; i&lt; textImport.length; i++){
+var sectionText = textImport[i].split("\n")
+  for (var j=0; j&lt;sectionText.length; j=j+2){
+    var textPair = sectionText[j]+ (sectionText[j+1] ? ("&lt;br/&gt;" + sectionText[j+1]):"")
+    textArray.push(textPair)
+  }
+}
+
+var captionDuration = 10
+var replacementString = ""
+var indexCount = 0
+
+for (let element of textArray) {
+
+  var beginTimeInSeconds = indexCount * captionDuration
+  var endTimeInSeconds = beginTimeInSeconds + captionDuration
+
+  var date = new Date(null);
+  date.setSeconds(beginTimeInSeconds);
+  var beginTimeISO = date.toISOString().substr(11, 8);
+
+  date = new Date(null);
+  date.setSeconds(endTimeInSeconds);
+  var endTimeISO = date.toISOString().substr(11, 8);
+
+  var stringConstruction = "&lt;p begin=\"" + beginTimeISO + ":00\" end=\"" + endTimeISO +":00\" region=\"bottom\"&gt;" + element + "&lt;/p&gt;"
+
+  replacementString = replacementString + "\n"+ stringConstruction
+  indexCount += 1
+}
+var generateITT = iTTBlank.replace(/&lt;p.*&lt;\/p&gt;/gm, replacementString)
+
+//remove curly quotes (app.write doesn't like them)
+generateITT = generateITT.replace(/[\u2018\u2019]/g,"'")
+generateITT = generateITT.replace(/[\u201C\u201D]/g,"\"")
+generateITT = generateITT.replace(/[\u2014]/g,"\-")
+//Create filepath
+
+var fileDir = userPath.toString() + '/Movies/CaptionsToFCP/'
+var now = new Date()
+var fileName = fileDir + projectTitle + now + ".itt";
+
+//save textblock to file
+writeTextToFile (generateITT, fileName)
+
+}</string>
 				</dict>
 				<key>BundleIdentifier</key>
 				<string>com.apple.Automator.RunJavaScript</string>
@@ -106,7 +186,7 @@
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>
-				<string>299.500000:420.000000</string>
+				<string>299.500000:368.000000</string>
 				<key>nibPath</key>
 				<string>/System/Library/Automator/Run JavaScript.action/Contents/Resources/Base.lproj/main.nib</string>
 			</dict>
@@ -238,12 +318,10 @@
 						<string>2</string>
 					</dict>
 				</dict>
-				<key>conversionLabel</key>
-				<integer>0</integer>
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>
-				<string>299.500000:609.000000</string>
+				<string>299.500000:557.000000</string>
 				<key>nibPath</key>
 				<string>/System/Library/Automator/Display Notification.action/Contents/Resources/Base.lproj/main.nib</string>
 			</dict>
@@ -253,7 +331,7 @@
 	</array>
 	<key>connectors</key>
 	<dict>
-		<key>ECEE8D09-4D81-4522-82AD-6FA144B1A9C2</key>
+		<key>852AB003-6667-4504-B812-4915DBB8A100</key>
 		<dict>
 			<key>from</key>
 			<string>CB6A29FB-1155-40BD-B9CF-416BE4072E23 - CB6A29FB-1155-40BD-B9CF-416BE4072E23</string>

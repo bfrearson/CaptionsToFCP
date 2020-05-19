@@ -9,44 +9,17 @@ var userPath = app.pathTo ('home folder')
 
 var captionsInput = input.toString()
 
-//Applescript/JXA boilerplate function
-function writeTextToFile(text, file, overwriteExistingContent) {
-    try {
-
-        // Convert the file to a string
-        var fileString = file.toString()
-
-        // Open the file for writing
-        var openedFile = app.openForAccess(Path(fileString), { writePermission: true })
-
-        // Clear the file if content should be overwritten
-        if (overwriteExistingContent) {
-            app.setEof(openedFile, { to: 0 })
-        }
-
-        // Write the new content to the file
-        app.write(text, { to: openedFile, startingAt: app.getEof(openedFile) })
-
-        // Close the file
-        app.closeAccess(openedFile)
-
-        // Return a boolean indicating that writing was successful
-        return true
-    }
-    catch(error) {
-
-        try {
-            // Close the file
-            app.closeAccess(file)
-        }
-        catch(error) {
-            // Report the error is closing failed
-            console.log(`Couldn't close file: ${error}`)
-        }
-
-        // Return a boolean indicating that writing was successful
-        return false
-    }
+//Use ObjC bridge to write unicode to file
+function writeTextToFile(text, file) {
+var nsStr       = $.NSString.alloc.initWithUTF8String(text)
+console.log (nsStr)
+var nsPath      = $(file).stringByStandardizingPath
+console.log(nsPath)
+var successBool  = nsStr.writeToFileAtomicallyEncodingError(nsPath, true, $.NSUTF8StringEncoding, $());
+  if (!successBool) {
+    throw new Error("function writeFile ERROR:\nWrite to File FAILED for:\n" + file)
+  }
+  return successBool
 }
 
 //Generate an XML text block
@@ -103,6 +76,6 @@ var now = new Date()
 var fileName = fileDir + projectTitle + now + ".itt";
 
 //save textblock to file
-writeTextToFile (generateITT, fileName, true)
+writeTextToFile (generateITT, fileName)
 
 }
