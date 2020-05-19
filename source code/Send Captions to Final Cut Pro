@@ -9,12 +9,21 @@ var userPath = app.pathTo ('home folder')
 
 var captionsInput = input.toString()
 
+function removeSpecialChars (input) {
+input = input.replace(/\&/g, "\&amp;")
+input = input.replace(/\"/g, "\&quot;")
+input = input.replace(/\'/g, "\&apos;")
+input = input.replace(/\</g, "\&lt;")
+input = input.replace(/\>/g, "\&gt;")
+return input
+}
+
+captionsInput = removeSpecialChars(captionsInput)
+
 //Use ObjC bridge to write unicode to file
 function writeTextToFile(text, file) {
 var nsStr       = $.NSString.alloc.initWithUTF8String(text)
-console.log (nsStr)
 var nsPath      = $(file).stringByStandardizingPath
-console.log(nsPath)
 var successBool  = nsStr.writeToFileAtomicallyEncodingError(nsPath, true, $.NSUTF8StringEncoding, $());
   if (!successBool) {
     throw new Error("function writeFile ERROR:\nWrite to File FAILED for:\n" + file)
@@ -45,9 +54,26 @@ var captionDuration = 10
 var replacementString = ""
 var indexCount = 0
 
+function prompt (text, defaultAnswer){
+var options = {defaultAnswer: defaultAnswer || ''}
+try{
+return app.displayDialog(text, options).textReturned
+}
+catch (e){
+return null
+}
+
+}
+
+var captionStart = prompt ("What is the caption start time? (HH:MM:SS) ", "00:00:00")
+
+
+var capStartInSeconds = (captionStart.substring(0,2)*3600) + (captionStart.substring(3,5)*60) + Number(captionStart.substring(6,8))
+
+
 for (let element of textArray) {
 
-  var beginTimeInSeconds = indexCount * captionDuration
+  var beginTimeInSeconds = (indexCount * captionDuration) + capStartInSeconds
   var endTimeInSeconds = beginTimeInSeconds + captionDuration
 
   var date = new Date(null);
@@ -64,12 +90,6 @@ for (let element of textArray) {
   indexCount += 1
 }
 var generateITT = iTTBlank.replace(/<p.*<\/p>/gm, replacementString)
-
-//remove curly quotes (app.write doesn't like them)
-generateITT = generateITT.replace(/[\u2018\u2019]/g,"'")
-generateITT = generateITT.replace(/[\u201C\u201D]/g,"\"")
-generateITT = generateITT.replace(/[\u2014]/g,"\-")
-//Create filepath
 
 var fileDir = userPath.toString() + '/Movies/CaptionsToFCP/'
 var now = new Date()
