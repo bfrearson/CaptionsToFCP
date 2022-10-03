@@ -1,7 +1,7 @@
 # CaptionsToFCP
 Automator script in JXA to generate a captions file.
 
-##**Note**
+**Note**
 This is a *very* early release—I've not put any validation or error checking in here. I'm happy to help debug any issues, but expect things to break if you try anything weird
 
 ## **Introduction**
@@ -17,16 +17,15 @@ Running the installer will install the following files:
 
 
 ## **Usage**
-With any text selected, right click -> Services -> Generate Captions for Final Cut Pro.
+1. With any text selected, right click -> Services -> Generate Captions for Final Cut Pro.
+- Note: The first line of text will be used as the title and will not appear in the timeline in Final Cut Pro.
 
-Note: The first line of text will be used as the title and will not appear in the timeline in Final Cut Pro.
-
-A single line break moves text to the next line. A double line break indicates the start of a new caption.
+2. A single line break moves text to the next line. A double line break indicates the start of a new caption.
 
 
-My typical usage is to copy a script into a Note or Textedit file, and format by adding new lines after the title.
+3. My typical usage is to copy a script into a Note or Textedit file, and format by adding new lines after the title.
 
-When the script is executed, a new file will be placed in ~/Movies/CaptionsToFCP
+4. When the script is executed, a new file will be placed in ~/Movies/CaptionsToFCP
 
 ### **Sample Lyrics**
 This is what the script expects to see:
